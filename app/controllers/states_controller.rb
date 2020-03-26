@@ -44,7 +44,8 @@ begin
 @h_tested_unofficial,
 @h_positive_unofficial,
 @h_deaths_unofficial,
-@dates_time_series = old
+@dates_time_series,
+@updated_at = old
       skip = true
     end
 rescue => e
@@ -63,9 +64,11 @@ unless skip
     prev_time_deaths = nil
     @url = {}
     @dates_time_series = {}
+    @updated_at = {}
     State.all.where('official_flag is true').order(crawled_at: :asc).each do |s|
       curr_time = Time.at((s.crawled_at.to_i/HOUR)*HOUR).to_i # truncate to hour   
       @dates_time_series[curr_time] = true
+      @updated_at[s.name] = s.crawled_at
       if s.positive && s.positive > h_pos_state[s.name]
         h_pos_time[curr_time] = h_pos_time[prev_time_pos] - h_pos_state[s.name] + s.positive
         h_pos_state[s.name] = s.positive
@@ -201,7 +204,8 @@ x=[timestamp,
 @h_tested_unofficial,
 @h_positive_unofficial,
 @h_deaths_unofficial,
-@dates_time_series].to_s
+@dates_time_series,
+@updated_at].to_s
 redis.set("state_summary_cache", x) rescue nil
 
     end # unless skip
