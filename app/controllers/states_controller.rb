@@ -68,7 +68,7 @@ unless skip
     State.all.where('official_flag is true').order(crawled_at: :asc).each do |s|
       curr_time = Time.at((s.crawled_at.to_i/HOUR)*HOUR).to_i # truncate to hour   
       @dates_time_series[curr_time] = true
-      @updated_at[s.name] = s.crawled_at
+      @updated_at[s.name] = s.crawled_at.to_i
       if s.positive && s.positive > h_pos_state[s.name]
         h_pos_time[curr_time] = h_pos_time[prev_time_pos] - h_pos_state[s.name] + s.positive
         h_pos_state[s.name] = s.positive
