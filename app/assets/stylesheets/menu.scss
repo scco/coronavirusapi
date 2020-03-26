@@ -1,8 +1,4 @@
-label.menu-opener {
-  position: absolute;
-  left: 0;
-  display: none;
-}
+
 
 input#menu {
   position: absolute;
@@ -11,7 +7,8 @@ input#menu {
 }
 label.menu-opener {
   position: absolute;
-  left:0;
+  right:15px;
+  top: 12px;
   display:none;
   width:12px;
   height:15px;
@@ -30,7 +27,7 @@ label.menu-opener {
   background-color: white;
 }
 @media screen and (max-width: 44em) {
-  $menu_width: 15em;
+  $menu_width: 10em;
 
   body {
     overflow-x: hidden;
@@ -39,7 +36,7 @@ label.menu-opener {
 
   nav[role="off-canvas"] {
     position: absolute;
-    left: -$menu_width;
+    right: -$menu_width;
     width: $menu_width;
     top: 50px;
     flex-direction: column;
@@ -56,15 +53,21 @@ label.menu-opener {
   label.menu-opener:after {
     position: absolute;
     content: "\2261";
+    font-size: 1.6em;
   }
 
   input:checked ~ .main-nav nav {
-    margin-left: 15px;
-    left: 15px;
+    margin-right: 15px;
+    right: 15px;
   }
 
   input:checked ~ .main-content {
-    margin-left: $menu_width + .5em;
-    margin-right: -($menu_width + .5em);
+    margin-right: $menu_width + .5em;
+    margin-left: -($menu_width + .5em);
   }
+  input:checked ~ .maain-nav {
+    //margin-right: $menu_width + .5em;
+    margin-left: -($menu_width + .5em);
+  }
+
 }

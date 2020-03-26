@@ -21,17 +21,25 @@ body {
   /* Prevent layout from shrinking other content when a long line overflows the viewport */
   overflow-x: scroll;
   margin: 0px;
-  padding: 10px 33px 33px 33px;
+
   min-height: 100vh;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'IBM Plex Serif', 'Georgia', Times, serif;
+}
 h1 {
   text-align: center;
   line-height: 1.2em;
 }
 h1.main-header {
   margin-top: 0px;
-  margin-bottom: 30px;
+  margin-bottom: 0px;
+  max-width: 70%;
+  float: left;
+  text-align: left;
+  font-size: 1.6em;
 }
 h2 {
   line-height: 1.4em;
@@ -88,7 +96,18 @@ ol {
 nav {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 15px;
+  margin-top: 12px;
+  //margin-bottom: 12px;
+  max-width: 49%;
+  float: right;
+  clear: none;
+}
+.main-nav {
+  border-bottom: 2px solid black;
+  display: inline-block;
+  width: 100vw;
+  padding: 12px;
+
 }
 nav > a {
   font-size: 16px;
@@ -96,9 +115,18 @@ nav > a {
   padding: 10px 10px 12px 10px;
 }
 
+.main-content {
+  clear: both;
+}
+
+.main-content > div, p {
+  padding: 12px;
+}
 @media screen and (min-width: 512px) {
   nav {
-    justify-content: center;
+    justify-content: flex-end;
+    border-left: none;
+    margin-right: 35px;
   }
 }
 
