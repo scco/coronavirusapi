@@ -101,5 +101,9 @@ nav > a {
     justify-content: center;
   }
 }
-
+.footnote {
+  margin-top:3px;
+  font-size: 0.8em;
+  color: gray;
+}
 

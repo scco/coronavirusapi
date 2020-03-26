@@ -144,6 +144,31 @@ unless skip
       }
     end
 
+    # Charts that include unofficial numbers for top 5 states
+    names = @h_positive.to_a.sort {|a,b| b[1].to_i <=> a[1].to_i}.map {|i| i[0]}[0..9]
+    all_unofficial_dates = {}
+    unofficial_states = names.map do |name|
+      h = {}
+      State.where("name='#{name}'").order(:crawled_at).map {|s| all_unofficial_dates[x=s.crawled_at.to_date.to_s] = true; h[x] = s.positive }
+      [name, h]
+    end
+    all_unofficial_dates = all_unofficial_dates.keys.sort
+    @chart_unofficial_states = unofficial_states.map do |name, h|
+      data = {}
+      prev_val = 0
+      all_unofficial_dates.each do |a|
+        if h[a]
+          data[a] = h[a]
+          prev_val = h[a]
+        else
+          data[a] = prev_val
+        end
+      end
+      {'name' => name,
+       'data' => data
+      }
+    end
+
     # unofficial counts
     h_tested_state = Hash.new(0)
     h_pos_state = Hash.new(0)
