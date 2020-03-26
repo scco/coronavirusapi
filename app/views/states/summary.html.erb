@@ -109,7 +109,7 @@ Unofficial counts also include press releases, news, and other sources:
 </td>
         <td><%= (@h_positive[state_name].to_f/tested.to_f*1000).round.to_f/10 rescue 'N\A' %></td>
         <td><%= (@h_deaths[state_name].to_f/@h_positive[state_name].to_f*1000).round.to_f/10 rescue 'N\A' %></td>
-	<td><%= "#{((Time.now-@updated_at[state_name])/360).round.to_f/10} hours ago" %></td>
+	<td><%= "#{((Time.now.to_i-@updated_at[state_name])/360).round.to_f/10} hours ago" %></td>
       </tr>
     <% end %>
   </tbody>
