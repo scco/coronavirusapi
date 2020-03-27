@@ -13,7 +13,7 @@
 
 2.) Create a MySQL user for the application to use. 
 
-2b.) If you want an application specific user (recommended), create tables coronavirusapi_development, coronavirusapi_production, and coronavirusapi_test and grant the MySQL user permissions on those tables. 
+2b.) If you want an application specific user (recommended), create databases coronavirusapi_development, coronavirusapi_production, and coronavirusapi_test and grant the MySQL user permissions on those tables. 
 
 3.) Copy db/database.yml.example to db/database.yml and update the file with your database credentials
 
