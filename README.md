@@ -1,6 +1,6 @@
 # README
 
-###Development Environment Requirements
+### Development Environment Requirements
 
 - Ruby 2.7.0 (If you have trouble switching ruby versions with Bundler, the application runs fine with Ruby 2.5.5 - just update the version locally in your Gemfile)
 - MySQL
