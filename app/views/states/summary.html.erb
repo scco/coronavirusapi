@@ -71,6 +71,7 @@ Official COVID-19 counts from government websites:
       <th>Tested/1M People</th>
       <th>Positive/Tested %</th>
       <th>Deaths/Positive %</th>
+<th>Source</th>
 <th>Last updated</th>
     </tr>
   </thead>
@@ -79,7 +80,7 @@ Official COVID-19 counts from government websites:
 
     <% @tested_arr.each do |state_name, tested| %>
       <tr>
-	<td><a href="<%= @url[state_name] %>"><%= state_name %></a></td>
+	<td><a href="<%= "/state/#{state_name}" %>"><%= state_name %></a></td>
         <td><%= tested %> <%= "(#{@h_tested_unofficial[state_name]})" if false && @h_tested_unofficial[state_name].to_i > tested.to_i %> </td>
         <td><%= @h_positive[state_name] %> <%= "(#{@h_positive_unofficial[state_name]})" if false && @h_positive_unofficial[state_name].to_i > @h_positive[state_name].to_i %></td>
         <td><%= @h_deaths[state_name] %> <%= "(#{@h_deaths_unofficial[state_name]})" if false && @h_deaths_unofficial[state_name].to_i > @h_deaths[state_name].to_i %> </td>
@@ -88,6 +89,7 @@ Official COVID-19 counts from government websites:
 </td>
         <td><%= (@h_positive[state_name].to_f/tested.to_f*1000).round.to_f/10 rescue 'N\A' %></td>
         <td><%= (@h_deaths[state_name].to_f/@h_positive[state_name].to_f*1000).round.to_f/10 rescue 'N\A' %></td>
+        <td><a href="<%= @url[state_name] %>"><%= state_name %></a></td>
 	<td><%= "#{((Time.now.to_i-@updated_at[state_name])/360).round.to_f/10} hours ago" %></td>
       </tr>
     <% end %>

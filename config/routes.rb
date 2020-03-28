@@ -11,4 +11,5 @@ Rails.application.routes.draw do
 	get "/:page", to: "static_pages#show"
 
         get '/getTimeSeries/:name', to: 'states#get_time_series'
+        get '/state/:name', to: 'states#state_detail'
 end

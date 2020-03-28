@@ -18,7 +18,21 @@ class StatesController < ApplicationController
   #   # State.all.each {|s| [s.crawled_at=s.created_at, s.save]}
 
   def state_detail
+    if (@st = params['name'].to_s.upcase) && @st.size == 2
+      @chart_tested = {}
+      @chart_pos = {}
+      @chart_deaths = {}  
+      arr = State.where("official_flag is true and name='#{@st}'").order(:crawled_at).all.map do |i|
 
+        @chart_tested[i.crawled_at] = i.tested
+        @chart_pos[i.crawled_at] = i.positive
+        @chart_deaths[i.crawled_at] = i.deaths
+        [i.crawled_at.to_i, i.tested, i.positive, i.deaths]
+      end
+      @timestamp, @tested, @positive, @deaths = arr[-1]
+    else
+      render plain: 'invalid query'    
+    end
   end
 
   def summary
