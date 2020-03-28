@@ -4,8 +4,8 @@
 	All data provided here are direct crawls of state government websites. These
 	are the officially reported numbers. Unlike other coronavirus data sites, we do not rely on
 	news or human crowd-sourced data. These are automatic captures of official state websites.
-	Todo is to certify this data on the blockchain.
-	(All websites last crawled: <%= @updated_date %>)</h3>
+	The data captured will also be certified on the blockchain.
+	(Websites crawled <%= ((Time.now-@timestamp)/360).round.to_f/10 %> hours ago)</h3>
 
 <h3><a href="mailto:coronavirusapi@googlegroups.com">Contact</a> for more info, or if you want to contribute to the project.
 </h3>
@@ -30,27 +30,6 @@ Official counts from government websites:
         <td><%= number_with_delimiter(@tested) %></td>
         <td><%= number_with_delimiter(@positive) %></td>
         <td><%= number_with_delimiter(@deaths) %></td>
-      </tr>
-  </tbody>
-</table>
-
-<p>
-Unofficial counts also include press releases, news, and other sources:
-</p>
-
-<table class="pretty" border="1">
-  <thead>
-    <tr>
-      <th>Tested</th>
-      <th>Positive</th>
-      <th>Deaths</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><%= number_with_delimiter(@tested_unofficial) %></td>
-        <td><%= number_with_delimiter(@positive_unofficial) %></td>
-        <td><%= number_with_delimiter(@deaths_unofficial) %></td>
       </tr>
   </tbody>
 </table>
@@ -80,7 +59,7 @@ Unofficial counts also include press releases, news, and other sources:
   <%= line_chart @chart_states2, {thousands: ",", library: {elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 0, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}}} %>
 </div>
 
-<h4>Latest official data crawled for each state (unofficial counts in parenthesis):</h4>
+<h4>Latest official data crawled for each state:</h4>
 
 <table class="pretty" border="1">
   <thead>
@@ -101,11 +80,11 @@ Unofficial counts also include press releases, news, and other sources:
     <% @tested_arr.each do |state_name, tested| %>
       <tr>
 	<td><a href="<%= @url[state_name] %>"><%= state_name %></a></td>
-        <td><%= tested %> <%= "(#{@h_tested_unofficial[state_name]})" if @h_tested_unofficial[state_name].to_i > tested.to_i %> </td>
-        <td><%= @h_positive[state_name] %> <%= "(#{@h_positive_unofficial[state_name]})" if @h_positive_unofficial[state_name].to_i > @h_positive[state_name].to_i %></td>
-        <td><%= @h_deaths[state_name] %> <%= "(#{@h_deaths_unofficial[state_name]})" if @h_deaths_unofficial[state_name].to_i > @h_deaths[state_name].to_i %> </td>
+        <td><%= tested %> <%= "(#{@h_tested_unofficial[state_name]})" if false && @h_tested_unofficial[state_name].to_i > tested.to_i %> </td>
+        <td><%= @h_positive[state_name] %> <%= "(#{@h_positive_unofficial[state_name]})" if false && @h_positive_unofficial[state_name].to_i > @h_positive[state_name].to_i %></td>
+        <td><%= @h_deaths[state_name] %> <%= "(#{@h_deaths_unofficial[state_name]})" if false && @h_deaths_unofficial[state_name].to_i > @h_deaths[state_name].to_i %> </td>
         <td><%= (tested.to_f/@population[state_name]*1000000).round %>
-<%= "(#{(@h_tested_unofficial[state_name].to_f/@population[state_name]*1000000).round})" if @h_tested_unofficial[state_name].to_i > tested.to_i %>
+<%= "(#{(@h_tested_unofficial[state_name].to_f/@population[state_name]*1000000).round})" if false && @h_tested_unofficial[state_name].to_i > tested.to_i %>
 </td>
         <td><%= (@h_positive[state_name].to_f/tested.to_f*1000).round.to_f/10 rescue 'N\A' %></td>
         <td><%= (@h_deaths[state_name].to_f/@h_positive[state_name].to_f*1000).round.to_f/10 rescue 'N\A' %></td>

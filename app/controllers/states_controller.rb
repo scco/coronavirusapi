@@ -19,12 +19,12 @@ class StatesController < ApplicationController
 
   def summary
     @population = H_POP
-    timestamp = State.where('official_flag is true').order(:crawled_at).last.crawled_at.to_s
+    @timestamp = State.where('official_flag is true').order(:crawled_at).last.crawled_at
     skip = false
 begin
     redis = Redis.new(host: "localhost")
     old = redis.get('state_summary_cache')
-    if old && (old=eval(old)) && old.shift == timestamp
+    if old && (old=eval(old)) && old.shift == @timestamp.to_s
 @updated_date,
 @url,
 @tested,
@@ -184,7 +184,7 @@ unless skip
     @positive_unofficial = h_pos_state.values.compact.sum
     @deaths_unofficial = h_deaths_state.values.compact.sum
 
-x=[timestamp,
+x=[@timestamp.to_s,
 @updated_date,
 @url,
 @tested,
