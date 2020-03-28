@@ -17,197 +17,198 @@ class StatesController < ApplicationController
   # run this after migration:
   #   # State.all.each {|s| [s.crawled_at=s.created_at, s.save]}
 
+  def state_detail
+
+  end
+
   def summary
     @population = H_POP
     @timestamp = State.where('official_flag is true').order(:crawled_at).last.crawled_at
     skip = false
-begin
-    redis = Redis.new(host: "localhost")
-    old = redis.get('state_summary_cache')
-    if old && (old=eval(old)) && old.shift == @timestamp.to_s
-@updated_date,
-@url,
-@tested,
-@positive,
-@deaths,
-@tested_unofficial,
-@positive_unofficial,
-@deaths_unofficial,
-@chart_tested,
-@chart_pos,
-@chart_deaths,
-@chart_states,
-@chart_states2,
-@tested_arr,
-@h_positive,
-@h_deaths,
-@h_tested_unofficial,
-@h_positive_unofficial,
-@h_deaths_unofficial,
-@dates_time_series,
-@updated_at = old
-      skip = true
-    end
-rescue => e
-end
-
-unless skip
-
-    h_tested_state = Hash.new(0)
-    h_pos_state = Hash.new(0)
-    h_deaths_state = Hash.new(0)
-    h_tested_time = Hash.new(0)
-    h_pos_time = Hash.new(0)
-    h_deaths_time = Hash.new(0)
-    prev_time_tested = nil
-    prev_time_pos = nil
-    prev_time_deaths = nil
-    @url = {}
-    @dates_time_series = {}
-    @updated_at = {}
-    State.all.where('official_flag is true').order(crawled_at: :asc).each do |s|
-      curr_time = Time.at((s.crawled_at.to_i/HOUR)*HOUR).to_i # truncate to hour   
-      @dates_time_series[curr_time] = true
-      @updated_at[s.name] = s.crawled_at.to_i
-      if s.positive && s.positive > h_pos_state[s.name]
-        h_pos_time[curr_time] = h_pos_time[prev_time_pos] - h_pos_state[s.name] + s.positive
-        h_pos_state[s.name] = s.positive
-        prev_time_pos = curr_time
-        @url[s.name] = s.positive_source
+    begin
+      redis = Redis.new(host: "localhost")
+      old = redis.get('state_summary_cache')
+      if old && (old=eval(old)) && old.shift == @timestamp.to_s
+        @updated_date,
+        @url,
+        @tested,
+        @positive,
+        @deaths,
+        @tested_unofficial,
+        @positive_unofficial,
+        @deaths_unofficial,
+        @chart_tested,
+        @chart_pos,
+        @chart_deaths,
+        @chart_states,
+        @chart_states2,
+        @tested_arr,
+        @h_positive,
+        @h_deaths,
+        @h_tested_unofficial,
+        @h_positive_unofficial,
+        @h_deaths_unofficial,
+        @dates_time_series,
+        @updated_at = old
+        skip = true
       end
-      if s.tested && s.tested > h_tested_state[s.name]
-        h_tested_time[curr_time] = h_tested_time[prev_time_tested] - h_tested_state[s.name] + s.tested
-        h_tested_state[s.name] = s.tested
-        prev_time_tested = curr_time
-      end
-      if s.deaths && s.deaths > h_deaths_state[s.name]
-        h_deaths_time[curr_time] = h_deaths_time[prev_time_deaths] - h_deaths_state[s.name] + s.deaths
-        h_deaths_state[s.name] = s.deaths
-        prev_time_deaths = curr_time
-      end  
+    rescue => e
     end
-    @tested_arr = h_tested_state.to_a.sort
-    @h_positive = h_pos_state
-    @h_deaths = h_deaths_state
-    @updated_date = Time.at(prev_time_pos).to_s
-
-    @tested = h_tested_state.values.compact.sum
-    @positive = h_pos_state.values.compact.sum
-    @deaths = h_deaths_state.values.compact.sum
-
-    # chart data for 5 charts
-    @chart_tested = h_tested_time
-    @chart_pos = h_pos_time
-    @chart_deaths = h_deaths_time
-
-    names = @h_positive.to_a.sort {|a,b| b[1].to_i <=> a[1].to_i}.map {|i| i[0]}[0..9]
-    all_dates = {}
-    states = names.map do |name|
-      h = {}
-      State.where("name='#{name}' and official_flag is true").order(:crawled_at).map {|s| all_dates[x=s.crawled_at.to_date.to_s] = true; h[x] = s.positive }
-      [name, h]
-    end
-    all_dates = all_dates.keys.sort
-    @chart_states = states.map do |name, h|
-      data = {}
-      prev_val = 0
-      all_dates.each do |a|
-        if h[a]
-          data[a] = h[a]
-          prev_val = h[a]
-        else
-          data[a] = prev_val
+    unless skip
+      h_tested_state = Hash.new(0)
+      h_pos_state = Hash.new(0)
+      h_deaths_state = Hash.new(0)
+      h_tested_time = Hash.new(0)
+      h_pos_time = Hash.new(0)
+      h_deaths_time = Hash.new(0)
+      prev_time_tested = nil
+      prev_time_pos = nil
+      prev_time_deaths = nil
+      @url = {}
+      @dates_time_series = {}
+      @updated_at = {}
+      State.all.where('official_flag is true').order(crawled_at: :asc).each do |s|
+        curr_time = Time.at((s.crawled_at.to_i/HOUR)*HOUR).to_i # truncate to hour   
+        @dates_time_series[curr_time] = true
+        @updated_at[s.name] = s.crawled_at.to_i
+        if s.positive && s.positive > h_pos_state[s.name]
+          h_pos_time[curr_time] = h_pos_time[prev_time_pos] - h_pos_state[s.name] + s.positive
+          h_pos_state[s.name] = s.positive
+          prev_time_pos = curr_time
+          @url[s.name] = s.positive_source
         end
-      end
-      {'name' => name,
-       'data' => data
-      }
-    end
-    names = @h_positive.to_a.sort {|a,b| b[1].to_f/H_POP[b[0]] <=> a[1].to_f/H_POP[a[0]]}.map {|i| i[0]}[0..9]
-    all_dates = {}
-    states = names.map do |name|
-      h = {}
-      State.where("name='#{name}' and official_flag is true").order(:crawled_at).map {|s| all_dates[x=s.crawled_at.to_date.to_s] = true; h[x] = (s.positive.to_f/H_POP[name.upcase]*1000_000_0).round.to_f/10 }
-      [name, h]
-    end
-    all_dates = all_dates.keys.sort
-    @chart_states2 = states.map do |name, h|
-      data = {}
-      prev_val = 0
-      all_dates.each do |a|
-        if h[a]
-          data[a] = h[a]
-          prev_val = h[a]
-        else
-          data[a] = prev_val
+        if s.tested && s.tested > h_tested_state[s.name]
+          h_tested_time[curr_time] = h_tested_time[prev_time_tested] - h_tested_state[s.name] + s.tested
+          h_tested_state[s.name] = s.tested
+          prev_time_tested = curr_time
         end
+        if s.deaths && s.deaths > h_deaths_state[s.name]
+          h_deaths_time[curr_time] = h_deaths_time[prev_time_deaths] - h_deaths_state[s.name] + s.deaths
+          h_deaths_state[s.name] = s.deaths
+          prev_time_deaths = curr_time
+        end  
+      end # s 
+      @tested_arr = h_tested_state.to_a.sort
+      @h_positive = h_pos_state
+      @h_deaths = h_deaths_state
+      @updated_date = Time.at(prev_time_pos).to_s
+
+      @tested = h_tested_state.values.compact.sum
+      @positive = h_pos_state.values.compact.sum
+      @deaths = h_deaths_state.values.compact.sum
+
+      # chart data for 5 charts
+      @chart_tested = h_tested_time
+      @chart_pos = h_pos_time
+      @chart_deaths = h_deaths_time
+
+      names = @h_positive.to_a.sort {|a,b| b[1].to_i <=> a[1].to_i}.map {|i| i[0]}[0..9]
+      all_dates = {}
+      states = names.map do |name|
+        h = {}
+        State.where("name='#{name}' and official_flag is true").order(:crawled_at).map {|s| all_dates[x=s.crawled_at.to_date.to_s] = true; h[x] = s.positive }
+        [name, h]
       end
-      {'name' => name,
-       'data' => data
-      }
-    end
-
-    # unofficial counts
-    h_tested_state = Hash.new(0)
-    h_pos_state = Hash.new(0)
-    h_deaths_state = Hash.new(0)
-    h_tested_time = Hash.new(0)
-    h_pos_time = Hash.new(0)
-    h_deaths_time = Hash.new(0)
-    prev_time_tested = nil
-    prev_time_pos = nil
-    prev_time_deaths = nil
-    State.all.order(crawled_at: :asc).each do |s|
-      curr_time = Time.at((s.crawled_at.to_i/HOUR)*HOUR) # truncate to hour   
-      if s.positive && s.positive > h_pos_state[s.name]
-        h_pos_time[curr_time] = h_pos_time[prev_time_pos] - h_pos_state[s.name] + s.positive
-        h_pos_state[s.name] = s.positive
-        prev_time_pos = curr_time
-        @url[s.name] = s.positive_source
+      all_dates = all_dates.keys.sort
+      @chart_states = states.map do |name, h|
+        data = {}
+        prev_val = 0
+        all_dates.each do |a|
+          if h[a]
+            data[a] = h[a]
+            prev_val = h[a]
+          else
+            data[a] = prev_val
+          end
+        end
+        {'name' => name,
+         'data' => data
+        }
       end
-      if s.tested && s.tested > h_tested_state[s.name]
-        h_tested_time[curr_time] = h_tested_time[prev_time_tested] - h_tested_state[s.name] + s.tested
-	h_tested_state[s.name] = s.tested 
-        prev_time_tested = curr_time
+      names = @h_positive.to_a.sort {|a,b| b[1].to_f/H_POP[b[0]] <=> a[1].to_f/H_POP[a[0]]}.map {|i| i[0]}[0..9]
+      all_dates = {}
+      states = names.map do |name|
+        h = {}
+        State.where("name='#{name}' and official_flag is true").order(:crawled_at).map {|s| all_dates[x=s.crawled_at.to_date.to_s] = true; h[x] = (s.positive.to_f/H_POP[name.upcase]*1000_000_0).round.to_f/10 }
+        [name, h]
       end
-      if s.deaths && s.deaths > h_deaths_state[s.name]
-        h_deaths_time[curr_time] = h_deaths_time[prev_time_deaths] - h_deaths_state[s.name] + s.deaths
-        h_deaths_state[s.name] = s.deaths 
-        prev_time_deaths = curr_time
-      end 
-    end
-    @h_tested_unofficial = h_tested_state
-    @h_positive_unofficial = h_pos_state
-    @h_deaths_unofficial = h_deaths_state
+      all_dates = all_dates.keys.sort
+      @chart_states2 = states.map do |name, h|
+        data = {}
+        prev_val = 0
+        all_dates.each do |a|
+          if h[a]
+            data[a] = h[a]
+            prev_val = h[a]
+          else
+            data[a] = prev_val
+          end
+        end
+        {'name' => name,
+         'data' => data
+        }
+      end
 
-    @tested_unofficial = h_tested_state.values.compact.sum
-    @positive_unofficial = h_pos_state.values.compact.sum
-    @deaths_unofficial = h_deaths_state.values.compact.sum
+      # unofficial counts
+      h_tested_state = Hash.new(0)
+      h_pos_state = Hash.new(0)
+      h_deaths_state = Hash.new(0)
+      h_tested_time = Hash.new(0)
+      h_pos_time = Hash.new(0)
+      h_deaths_time = Hash.new(0)
+      prev_time_tested = nil
+      prev_time_pos = nil
+      prev_time_deaths = nil
+      State.all.order(crawled_at: :asc).each do |s|
+        curr_time = Time.at((s.crawled_at.to_i/HOUR)*HOUR) # truncate to hour   
+        if s.positive && s.positive > h_pos_state[s.name]
+          h_pos_time[curr_time] = h_pos_time[prev_time_pos] - h_pos_state[s.name] + s.positive
+          h_pos_state[s.name] = s.positive
+          prev_time_pos = curr_time
+          @url[s.name] = s.positive_source
+        end
+        if s.tested && s.tested > h_tested_state[s.name]
+          h_tested_time[curr_time] = h_tested_time[prev_time_tested] - h_tested_state[s.name] + s.tested
+          h_tested_state[s.name] = s.tested 
+          prev_time_tested = curr_time
+        end
+        if s.deaths && s.deaths > h_deaths_state[s.name]
+          h_deaths_time[curr_time] = h_deaths_time[prev_time_deaths] - h_deaths_state[s.name] + s.deaths
+          h_deaths_state[s.name] = s.deaths 
+          prev_time_deaths = curr_time
+        end 
+      end # s
+      @h_tested_unofficial = h_tested_state
+      @h_positive_unofficial = h_pos_state
+      @h_deaths_unofficial = h_deaths_state
 
-x=[@timestamp.to_s,
-@updated_date,
-@url,
-@tested,
-@positive,
-@deaths, 
-@tested_unofficial,
-@positive_unofficial,
-@deaths_unofficial,
-@chart_tested,
-@chart_pos,
-@chart_deaths,
-@chart_states,
-@chart_states2,
-@tested_arr,
-@h_positive,
-@h_deaths,
-@h_tested_unofficial,
-@h_positive_unofficial,
-@h_deaths_unofficial,
-@dates_time_series,
-@updated_at].to_s
-redis.set("state_summary_cache", x) rescue nil
+      @tested_unofficial = h_tested_state.values.compact.sum
+      @positive_unofficial = h_pos_state.values.compact.sum
+      @deaths_unofficial = h_deaths_state.values.compact.sum
 
+      x = [@timestamp.to_s,
+           @updated_date,
+           @url,
+           @tested,
+           @positive,
+           @deaths, 
+           @tested_unofficial,
+           @positive_unofficial,
+           @deaths_unofficial,
+           @chart_tested,
+           @chart_pos,
+           @chart_deaths,
+           @chart_states,
+           @chart_states2,
+           @tested_arr,
+           @h_positive,
+           @h_deaths,
+           @h_tested_unofficial,
+           @h_positive_unofficial,
+           @h_deaths_unofficial,
+           @dates_time_series,
+           @updated_at].to_s
+      redis.set("state_summary_cache", x) rescue nil
     end # unless skip
     
     # fix time in 3 charts
