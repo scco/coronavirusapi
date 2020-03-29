@@ -22,7 +22,7 @@ body {
   /* Prevent layout from shrinking other content when a long line overflows the viewport */
   overflow-x: scroll;
   margin: 0px;
-  padding: 10px 33px 33px 33px;
+  padding: 10px 10px 10px 10px;
   min-height: 100vh;
 }
 
@@ -51,12 +51,12 @@ h4, h5 {
   line-height: 1.2em;
 }
 td {
-  font-size: 1.1em;
-  line-height: 1.2em;
+  font-size: 0.8em;
+  line-height: 0.8em;
 }
 
 p, li {
-  font-size: 1.2em;
+  font-size: 1.0em;
   line-height: 1.4em;
 }
 
@@ -73,7 +73,7 @@ ol {
 }
 
 .pretty th .current {
-  padding-right: 12px;
+  padding-right: 4px;
   background-repeat: no-repeat;
   background-position: right center;
 }

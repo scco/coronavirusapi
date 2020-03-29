@@ -66,18 +66,18 @@ Official COVID-19 counts from government websites:
 
 <h4>Latest official data crawled for each state, click headers to sort:</h4>
 
-<table id="fulltable" class="pretty" border="1">
+<table id="fulltable" class="table table-sm table-bordered table-striped">
   <thead>
     <tr>
       <th>Name</th>
       <th>Tested</th>
       <th>Positive</th>
       <th>Deaths</th>
-      <th>Tested/1M People</th>
-      <th>Positive/Tested %</th>
-      <th>Deaths/Positive %</th>
+      <th>Tested<br/>/1M People</th>
+      <th>Positive<br/>/Tested %</th>
+      <th>Deaths<br/>/Positive %</th>
 <th>Source</th>
-<th>Last updated</th>
+<th>Last update<br/>(hours ago)</th>
     </tr>
   </thead>
 
@@ -95,7 +95,7 @@ Official COVID-19 counts from government websites:
         <td><%= (@h_positive[state_name].to_f/tested.to_f*1000).round.to_f/10 rescue 'N\A' %></td>
         <td><%= (@h_deaths[state_name].to_f/@h_positive[state_name].to_f*1000).round.to_f/10 rescue 'N\A' %></td>
         <td><a href="<%= @url[state_name] %>"><%= state_name %></a></td>
-	<td><%= "#{((Time.now.to_i-@updated_at[state_name])/360).round.to_f/10} hours ago" %></td>
+	<td><%= "#{((Time.now.to_i-@updated_at[state_name])/360).round.to_f/10}" %></td>
       </tr>
     <% end %>
   </tbody>
