@@ -70,8 +70,9 @@ end
     skip = false
     begin
       redis = Redis.new(host: "localhost")
-      old = redis.get('state_summary_cache')
-      if !params['reload'] || (old && (old=eval(old)) && old.shift == @timestamp.to_s)
+      old = redis.get('state_summary_cache3')
+      if (old && (old=eval(old)) && old.shift == @timestamp.to_s)
+        # load old data
         @updated_date,
         @url,
         @tested,
@@ -98,7 +99,7 @@ end
       end
     rescue => e
     end
-    unless skip
+    if !skip && params['reload']
       h_tested_state = Hash.new(0)
       h_pos_state = Hash.new(0)
       h_deaths_state = Hash.new(0)
@@ -255,7 +256,7 @@ end
            @dates_time_series,
            @updated_at,
            @positive_doubling_time].to_s
-      redis.set("state_summary_cache", x) rescue nil
+      redis.set("state_summary_cache3", x) rescue nil
     end # unless skip
     
     # fix time in 3 charts
