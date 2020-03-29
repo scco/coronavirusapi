@@ -55,3 +55,4 @@ end
 
 gem 'unicorn'
 gem 'chartkick'
+gem 'linefit'
