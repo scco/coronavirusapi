@@ -17,6 +17,34 @@ class StatesController < ApplicationController
   # run this after migration:
   #   # State.all.each {|s| [s.crawled_at=s.created_at, s.save]}
 
+DAY_SEC = 3600 * 24
+WEEK_SEC = DAY_SEC * 7
+
+def round10(x)
+  (x.to_f*10).round.to_f/10
+end
+
+def get_info_for(xs, ys)
+  y_log = ys.map {|y| Math.log((y>0 ? y : 1).to_f)}
+  lineFit = LineFit.new
+  lineFit.setData(xs.map{|x| x.to_f},y_log)
+  logIntercept,logSlope = lineFit.coefficients
+  doublingTime = Math.log(2.0)/logSlope
+  { "logSlope":logSlope, "doublingTime":doublingTime }
+end
+
+def positive_doubling_time(st)
+  arr = State.where("name='#{st}' and official_flag=true").order(crawled_at: :desc)
+  week_ago = arr[0].crawled_at.to_i - WEEK_SEC
+  arr = arr.select {|i| i.crawled_at.to_i > week_ago }
+  h = {}
+  arr.each {|i| h[i.positive] = i.crawled_at.to_i} # remove duplicate values, use earliest date
+  arr = h.to_a.map {|v,t| [t, v]}.sort
+  xs = arr.map {|t,v| t}
+  ys = arr.map {|t,v| v}
+  round10(get_info_for(xs, ys)[:doublingTime]/DAY_SEC)
+end
+
   def state_detail
     if (@st = params['name'].to_s.upcase) && @st.size == 2
       @chart_tested = {}
@@ -35,6 +63,7 @@ class StatesController < ApplicationController
     end
   end
 
+  # only reloads redis if called with ?reload=y
   def summary
     @population = H_POP
     @timestamp = State.where('official_flag is true').order(:crawled_at).last.crawled_at
@@ -42,7 +71,7 @@ class StatesController < ApplicationController
     begin
       redis = Redis.new(host: "localhost")
       old = redis.get('state_summary_cache')
-      if old && (old=eval(old)) && old.shift == @timestamp.to_s
+      if !params['reload'] || (old && (old=eval(old)) && old.shift == @timestamp.to_s)
         @updated_date,
         @url,
         @tested,
@@ -63,7 +92,8 @@ class StatesController < ApplicationController
         @h_positive_unofficial,
         @h_deaths_unofficial,
         @dates_time_series,
-        @updated_at = old
+        @updated_at,
+        @positive_doubling_time = old
         skip = true
       end
     rescue => e
@@ -81,10 +111,12 @@ class StatesController < ApplicationController
       @url = {}
       @dates_time_series = {}
       @updated_at = {}
+      @positive_doubling_time = {}
       State.all.where('official_flag is true').order(crawled_at: :asc).each do |s|
         curr_time = Time.at((s.crawled_at.to_i/HOUR)*HOUR).to_i # truncate to hour   
         @dates_time_series[curr_time] = true
         @updated_at[s.name] = s.crawled_at.to_i
+        @positive_doubling_time[s.name] = positive_doubling_time(s.name)
         if s.positive && s.positive > h_pos_state[s.name]
           h_pos_time[curr_time] = h_pos_time[prev_time_pos] - h_pos_state[s.name] + s.positive
           h_pos_state[s.name] = s.positive
@@ -221,7 +253,8 @@ class StatesController < ApplicationController
            @h_positive_unofficial,
            @h_deaths_unofficial,
            @dates_time_series,
-           @updated_at].to_s
+           @updated_at,
+           @positive_doubling_time].to_s
       redis.set("state_summary_cache", x) rescue nil
     end # unless skip
     
