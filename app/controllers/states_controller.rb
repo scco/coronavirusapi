@@ -84,7 +84,7 @@ end
     begin
       redis = Redis.new(host: "localhost")
       old = redis.get('state_summary_cache4')
-      if (old && (old=eval(old)) && old.shift == @timestamp.to_s)
+      if (old && (old=eval(old)) && old.shift == @timestamp.to_s) || !params['reload']
         # load old data
         @updated_date,
         @url,
