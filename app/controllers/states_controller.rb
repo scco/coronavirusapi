@@ -92,7 +92,7 @@ end
     skip = false
     begin
       redis = Redis.new(host: "localhost")
-      old = redis.get('state_summary_cache4')
+      old = redis.get('state_summary_cache5')
       if (old && (old=eval(old)) && old.shift == @timestamp.to_s) || !params['reload']
         # load old data
         @updated_date,
@@ -289,7 +289,7 @@ end
            @positive_doubling_time,
            @deaths_doubling_time,
            @us_doubling_times].to_s
-      redis.set("state_summary_cache4", x) rescue nil
+      redis.set("state_summary_cache5", x) rescue nil
     end # unless skip
     
     # fix time in 3 charts
