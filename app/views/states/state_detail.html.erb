@@ -1,21 +1,22 @@
 <p id="notice"><%= notice %></p>
 <hr>
-<h3> This page provides a record of official data from the <%= @st %> government website.
+<p> This page provides a record of official data from the <%= @st %> government website.
 	All data provided here are direct crawls from the website. These
 	are the officially reported numbers. Unlike other coronavirus data sites, we do not rely on
 	news or human crowd-sourced data. 
-	(Website crawled <%= ((Time.now.to_i-@timestamp)/360).round.to_f/10 %> hours ago)</h3>
+	(Website crawled <%= ((Time.now.to_i-@timestamp)/360).round.to_f/10 %> hours ago)</p>
 
-<h3><a href="mailto:coronavirusapi@googlegroups.com">Contact</a> for more info, or if you want to contribute to the project.
-</h3>
+<p><a href="mailto:coronavirusapi@googlegroups.com">Contact</a> for more info, or if you want to contribute to the project.
+</p>
 
-<h3>To donate crypto, see the donation addresses at the bottom of the page. Thanks!
-</h3>
+<p>To donate crypto, see the donation addresses at the bottom of the page. Thanks!
+</p>
 
 <p>
 Official COVID-19 counts for <%= @st %>
 </p>
 
+<p>
 <table class="pretty" border="1">
   <thead>
     <tr>
@@ -32,6 +33,7 @@ Official COVID-19 counts for <%= @st %>
       </tr>
   </tbody>
 </table>
+</p>
 
 <div class="container">
 	<h5>Total number tested over time:</h5>
@@ -46,9 +48,11 @@ Official COVID-19 counts for <%= @st %>
   <%= line_chart @chart_deaths, curve: false, xtitle: "Date", points: false, thousands: ",", library: {spanGaps: false, elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 10, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}} %>
 </div>
 
+<p>
 <h4>Api:</h4>
 To get the time series for <%= @st %>, use http://coronavirusapi.com/getTimeSeries/<%= @st %>
-
+</p>
+<p>
 <h4>Donate:</h4>
 <p>
 BTC: 1LG9dUf39dCKAEFcKm6guNhadTJwNqj44J
@@ -60,4 +64,5 @@ ETH: 0x549ffFB83ac67Ca1Ae47668ac3cAAE3e0c77a9bd
 XLM: GCVRV67LBHTMVXKDAJSW3S3ASASI6EJWQU2LYEOGKPSJEY42PYRAUDME
 </p><p>
 VET: 0xa81cd7a8272E053A18a13459425FFd260105EDd9
+</p>
 </p>
