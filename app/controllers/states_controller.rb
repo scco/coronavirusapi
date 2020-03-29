@@ -45,6 +45,19 @@ def positive_doubling_time(st)
   round10(get_info_for(xs, ys)[:doublingTime]/DAY_SEC)
 end
 
+def deaths_doubling_time(st)
+  arr = State.where("name='#{st}' and official_flag=true").order(crawled_at: :desc)
+  week_ago = arr[0].crawled_at.to_i - WEEK_SEC
+  arr = arr.select {|i| i.deaths && (i.crawled_at.to_i > week_ago) }
+  h = {}
+  arr.each {|i| h[i.deaths] = i.crawled_at.to_i} # remove duplicate values, use earliest date
+  arr = h.to_a.map {|v,t| [t, v]}.sort
+  return 'N/A' if arr.size <= 2
+  xs = arr.map {|t,v| t}
+  ys = arr.map {|t,v| v}
+  round10(get_info_for(xs, ys)[:doublingTime]/DAY_SEC)
+end
+
   def state_detail
     if (@st = params['name'].to_s.upcase) && @st.size == 2
       @chart_tested = {}
@@ -70,7 +83,7 @@ end
     skip = false
     begin
       redis = Redis.new(host: "localhost")
-      old = redis.get('state_summary_cache3')
+      old = redis.get('state_summary_cache4')
       if (old && (old=eval(old)) && old.shift == @timestamp.to_s)
         # load old data
         @updated_date,
@@ -94,7 +107,8 @@ end
         @h_deaths_unofficial,
         @dates_time_series,
         @updated_at,
-        @positive_doubling_time = old
+        @positive_doubling_time,
+        @deaths_doubling_time = old
         skip = true
       end
     rescue => e
@@ -113,11 +127,13 @@ end
       @dates_time_series = {}
       @updated_at = {}
       @positive_doubling_time = {}
+      @deaths_doubling_time = {}
       State.all.where('official_flag is true').order(crawled_at: :asc).each do |s|
         curr_time = Time.at((s.crawled_at.to_i/HOUR)*HOUR).to_i # truncate to hour   
         @dates_time_series[curr_time] = true
         @updated_at[s.name] = s.crawled_at.to_i
         @positive_doubling_time[s.name] = positive_doubling_time(s.name)
+        @deaths_doubling_time[s.name] = deaths_doubling_time(s.name)
         if s.positive && s.positive > h_pos_state[s.name]
           h_pos_time[curr_time] = h_pos_time[prev_time_pos] - h_pos_state[s.name] + s.positive
           h_pos_state[s.name] = s.positive
@@ -255,8 +271,9 @@ end
            @h_deaths_unofficial,
            @dates_time_series,
            @updated_at,
-           @positive_doubling_time].to_s
-      redis.set("state_summary_cache3", x) rescue nil
+           @positive_doubling_time,
+           @deaths_doubling_time].to_s
+      redis.set("state_summary_cache4", x) rescue nil
     end # unless skip
     
     # fix time in 3 charts

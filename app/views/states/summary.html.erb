@@ -80,6 +80,7 @@ Official COVID-19 counts from government websites:
       <th>Positive<br/>/Tested %</th>
       <th>Deaths<br/>/Positive %</th>
       <th>Days to<br/>2x cases</th>
+      <th>Days to<br/>2x deaths</th>
       <th>Source</th>
       <th>Last update<br/>(hours ago)</th>
     </tr>
@@ -99,6 +100,7 @@ Official COVID-19 counts from government websites:
         <td><%= (@h_positive[state_name].to_f/tested.to_f*1000).round.to_f/10 rescue 'N\A' %></td>
         <td><%= (@h_deaths[state_name].to_f/@h_positive[state_name].to_f*1000).round.to_f/10 rescue 'N\A' %></td>
         <td><%= @positive_doubling_time[state_name] %></td>
+        <td><%= @deaths_doubling_time[state_name] %></td>
         <td><a href="<%= @url[state_name] %>"><%= state_name %></a></td>
 	<td><%= "#{((Time.now.to_i-@updated_at[state_name])/360).round.to_f/10}" %></td>
       </tr>
