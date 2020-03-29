@@ -13,6 +13,7 @@
  *= require_tree .
  *= require_self
  */
+@import "bootstrap/dist/css/bootstrap";
 html {
   /* Prevent layout jumps when switching to a page where content is shorter than viewport. */
   overflow-y: scroll;

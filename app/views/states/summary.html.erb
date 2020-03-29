@@ -1,3 +1,8 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('#fulltable').DataTable( { "paging": false, "searching": false, "order":[2, "desc"] });
+  });
+</script>
 <p id="notice"><%= notice %></p>
 <hr>
 <h3> This page provides a record of official data from US government websites for the 50 states and DC.
@@ -17,7 +22,7 @@
 Official COVID-19 counts from government websites:
 </p>
 
-<table class="pretty" border="1">
+<table id="simpletable" class="pretty" border="1">
   <thead>
     <tr>
       <th>Tested</th>
@@ -59,9 +64,9 @@ Official COVID-19 counts from government websites:
   <%= line_chart @chart_states2, {thousands: ",", library: {elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 0, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}}} %>
 </div>
 
-<h4>Latest official data crawled for each state:</h4>
+<h4>Latest official data crawled for each state, click headers to sort:</h4>
 
-<table class="pretty" border="1">
+<table id="fulltable" class="pretty" border="1">
   <thead>
     <tr>
       <th>Name</th>
