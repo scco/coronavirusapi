@@ -20,55 +20,8 @@ This page provides a record of official data from US government websites for the
 </p>
 
 <p>
-Official COVID-19 counts from government websites:
+<h4>Latest official COVID-19 data crawled from government websites (click headers to sort):</h4>
 </p>
-<p>
-<table id="simpletable" class="pretty" border="1">
-  <thead>
-    <tr>
-      <th>Tested</th>
-      <th>Positive</th>
-      <th>Deaths</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><%= number_with_delimiter(@tested) %></td>
-        <td><%= number_with_delimiter(@positive) %></td>
-        <td><%= number_with_delimiter(@deaths) %></td>
-      </tr>
-  </tbody>
-</table>
-</p>
-
-<div class="container">
-	<h5>Total number tested over time:</h5>
-  <%= line_chart @chart_tested, curve: false, xtitle: "Date", points: false, thousands: "," %>
-</div>
-<div class="container">
-  <h5>Total positive cases over time:</h5>
-  <%= line_chart @chart_pos, curve: false, xtitle: "Date", points: false, thousands: ",", library: {spanGaps: false, elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 10, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}} %>
-</div>
-<div class="container">
-  <h5>Total deaths over time:</h5>
-  <%= line_chart @chart_deaths, curve: false, xtitle: "Date", points: false, thousands: ",", library: {spanGaps: false, elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 10, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}} %>
-</div>
-
-<div class="container">
-  <h5>Cases in top states over time:</h5>
-  <%= line_chart @chart_states, {thousands: ",", library: {spanGaps: false, elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 10, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}}} %>
-</div>
-
-
-<div class="container">
-  <h5>Cases in top states normalized by population (1 million) over time:</h5>
-  <%= line_chart @chart_states2, {thousands: ",", library: {elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 0, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}}} %>
-</div>
-
-<p>
-<h4>Latest official data crawled for each state (click headers to sort):</h4>
-</p>
-
 <table id="fulltable" class="table table-sm table-bordered table-striped">
   <thead>
     <tr>
@@ -85,9 +38,20 @@ Official COVID-19 counts from government websites:
       <th>Last update<br/>(hours ago)</th>
     </tr>
   </thead>
-
   <tbody>
-
+      <tr>
+        <td>USA</td>
+        <td><%= (@tested) %></td>
+        <td><%= (@positive) %></td>
+        <td><%= (@deaths) %></td>
+        <td><%= (@tested.to_f/@population['US']*1000000).round %></td>
+        <td><%= (@positive.to_f/@tested.to_f*1000).round.to_f/10 rescue 'N\A' %></td>
+        <td><%= (@deaths.to_f/@positive.to_f*1000).round.to_f/10 rescue 'N\A' %></td>
+        <td><%= @us_doubling_times[0] %></td>
+        <td><%= @us_doubling_times[1] %></td>
+        <td></td>
+        <td><%= ((Time.now-@timestamp)/360).round.to_f/10 %></td>
+      </tr>
     <% @tested_arr.each do |state_name, tested| %>
       <tr>
 	<td><a href="<%= "/state/#{state_name}" %>"><%= state_name %></a></td>
@@ -107,6 +71,30 @@ Official COVID-19 counts from government websites:
     <% end %>
   </tbody>
 </table>
+
+
+
+<div class="container">
+  <h5>Total number tested over time:</h5>
+  <%= line_chart @chart_tested, curve: false, xtitle: "Date", points: false, thousands: "," %>
+</div>
+<div class="container">
+  <h5>Total positive cases over time:</h5>
+  <%= line_chart @chart_pos, curve: false, xtitle: "Date", points: false, thousands: ",", library: {spanGaps: false, elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 10, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}} %>
+</div>
+<div class="container">
+  <h5>Total deaths over time:</h5>
+  <%= line_chart @chart_deaths, curve: false, xtitle: "Date", points: false, thousands: ",", library: {spanGaps: false, elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 10, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}} %>
+</div>
+<div class="container">
+  <h5>Cases in top states over time:</h5>
+  <%= line_chart @chart_states, {thousands: ",", library: {spanGaps: false, elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 10, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}}} %>
+</div>
+<div class="container">
+  <h5>Cases in top states normalized by population (1 million) over time:</h5>
+  <%= line_chart @chart_states2, {thousands: ",", library: {elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 0, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}}} %>
+</div>
+
 
 <p>
 <h4>Download:</h4>

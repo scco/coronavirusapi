@@ -58,6 +58,15 @@ def deaths_doubling_time(st)
   round10(get_info_for(xs, ys)[:doublingTime]/DAY_SEC)
 end
 
+def doubling_time_from_hash(hash)
+  h={} 
+  hash.to_a.sort.reverse.each {|t,v| h[v]=t} 
+  arr=h.to_a.map {|v,t| [t,v]}.sort 
+  xs = arr.map {|t,v| t} 
+  ys = arr.map {|t,v| v} 
+  round10(get_info_for(xs, ys)[:doublingTime]/DAY_SEC)
+end
+
   def state_detail
     if (@st = params['name'].to_s.upcase) && @st.size == 2
       @chart_tested = {}
@@ -108,7 +117,8 @@ end
         @dates_time_series,
         @updated_at,
         @positive_doubling_time,
-        @deaths_doubling_time = old
+        @deaths_doubling_time,
+        @us_doubling_times = old
         skip = true
       end
     rescue => e
@@ -164,6 +174,11 @@ end
       @chart_tested = h_tested_time
       @chart_pos = h_pos_time
       @chart_deaths = h_deaths_time
+
+@us_doubling_times = [
+  doubling_time_from_hash(@chart_pos),
+  doubling_time_from_hash(@chart_deaths)
+]
 
       names = @h_positive.to_a.sort {|a,b| b[1].to_i <=> a[1].to_i}.map {|i| i[0]}[0..9]
       all_dates = {}
@@ -272,7 +287,8 @@ end
            @dates_time_series,
            @updated_at,
            @positive_doubling_time,
-           @deaths_doubling_time].to_s
+           @deaths_doubling_time,
+           @us_doubling_times].to_s
       redis.set("state_summary_cache4", x) rescue nil
     end # unless skip
     
