@@ -8,14 +8,65 @@ class StatesController < ApplicationController
   	"MA"=>6547629, "MI"=>9883640, "MN"=>5303925, "MS"=>2967297, "MO"=>5988144, "MT"=>989415, "NE"=>1826341, 
   	"NV"=>2700551, "NH"=>1316470, "NJ"=>8791894, "NM"=>2059179, "NY"=>19378102, "NC"=>9535483, "ND"=>672591, 
   	"OH"=>11536504, "OK"=>3751351, "OR"=>3831074, "PA"=>12702379, "RI"=>1052567, "SC"=>4625364, "SD"=>814180, 
-  	"TN"=>6346165, "TX"=>25145561, "US"=>308745538, "UT"=>2763885, "VT"=>625741, "VA"=>8001024, "WA"=>6724540, 
-  	"WV"=>1852994, "WI"=>5686986, "WY"=>563626}
+  	"TN"=>6346165, "TX"=>25145561, "US"=>(308745538+3193694), "UT"=>2763885, "VT"=>625741, "VA"=>8001024, "WA"=>6724540, 
+  	"WV"=>1852994, "WI"=>5686986, "WY"=>563626, "PR" =>3193694 }
   HOUR = 3600
 
   # deleted redudant data with:
   # h={};State.all.order(:crawled_at).map {|s| ((t,p,d=h[s.name])&&(t.to_i>=s.tested.to_i)&&(p.to_i>=s.positive.to_i)&&(d.to_i>=s.deaths.to_i)) ? s.delete : [h[s.name]=[s.tested,s.positive,s.deaths]]}
   # run this after migration:
   #   # State.all.each {|s| [s.crawled_at=s.created_at, s.save]}
+
+DAY_SEC = 3600 * 24
+WEEK_SEC = DAY_SEC * 7
+
+def round10(x)
+  (x.to_f*10).round.to_f/10
+end
+
+def get_info_for(xs, ys)
+  y_log = ys.map {|y| Math.log((y>0 ? y : 1).to_f)}
+  lineFit = LineFit.new
+  lineFit.setData(xs.map{|x| x.to_f},y_log)
+  logIntercept,logSlope = lineFit.coefficients
+  doublingTime = Math.log(2.0)/logSlope
+  { "logSlope":logSlope, "doublingTime":doublingTime }
+end
+
+def positive_doubling_time(st)
+  arr = State.where("name='#{st}' and official_flag=true").order(crawled_at: :desc)
+  week_ago = arr[0].crawled_at.to_i - WEEK_SEC
+  arr = arr.select {|i| i.crawled_at.to_i > week_ago }
+  h = {}
+  arr.each {|i| h[i.positive] = i.crawled_at.to_i} # remove duplicate values, use earliest date
+  arr = h.to_a.map {|v,t| [t, v]}.sort
+  return '...' if arr.size <= 3
+  xs = arr.map {|t,v| t}
+  ys = arr.map {|t,v| v}
+  round10(get_info_for(xs, ys)[:doublingTime]/DAY_SEC)
+end
+
+def deaths_doubling_time(st)
+  arr = State.where("name='#{st}' and official_flag=true").order(crawled_at: :desc)
+  week_ago = arr[0].crawled_at.to_i - WEEK_SEC
+  arr = arr.select {|i| i.deaths && (i.crawled_at.to_i > week_ago) }
+  h = {}
+  arr.each {|i| h[i.deaths] = i.crawled_at.to_i} # remove duplicate values, use earliest date
+  arr = h.to_a.map {|v,t| [t, v]}.sort
+  return '...' if arr.size <= 3
+  xs = arr.map {|t,v| t}
+  ys = arr.map {|t,v| v}
+  round10(get_info_for(xs, ys)[:doublingTime]/DAY_SEC)
+end
+
+def doubling_time_from_hash(hash)
+  h={} 
+  hash.to_a.sort.reverse.each {|t,v| h[v]=t} 
+  arr=h.to_a.map {|v,t| [t,v]}.sort 
+  xs = arr.map {|t,v| t} 
+  ys = arr.map {|t,v| v} 
+  round10(get_info_for(xs, ys)[:doublingTime]/DAY_SEC)
+end
 
   def state_detail
     if (@st = params['name'].to_s.upcase) && @st.size == 2
@@ -35,14 +86,16 @@ class StatesController < ApplicationController
     end
   end
 
+  # only reloads redis if called with ?reload=y
   def summary
     @population = H_POP
     @timestamp = State.where('official_flag is true').order(:crawled_at).last.crawled_at
     skip = false
     begin
       redis = Redis.new(host: "localhost")
-      old = redis.get('state_summary_cache')
-      if old && (old=eval(old)) && old.shift == @timestamp.to_s
+      old = redis.get('state_summary_cache5')
+      if (old && (old=eval(old)) && old.shift == @timestamp.to_s) || !params['reload']
+        # load old data
         @updated_date,
         @url,
         @tested,
@@ -63,12 +116,15 @@ class StatesController < ApplicationController
         @h_positive_unofficial,
         @h_deaths_unofficial,
         @dates_time_series,
-        @updated_at = old
+        @updated_at,
+        @positive_doubling_time,
+        @deaths_doubling_time,
+        @us_doubling_times = old
         skip = true
       end
     rescue => e
     end
-    unless skip
+    if !skip && params['reload']
       h_tested_state = Hash.new(0)
       h_pos_state = Hash.new(0)
       h_deaths_state = Hash.new(0)
@@ -81,10 +137,14 @@ class StatesController < ApplicationController
       @url = {}
       @dates_time_series = {}
       @updated_at = {}
+      @positive_doubling_time = {}
+      @deaths_doubling_time = {}
       State.all.where('official_flag is true').order(crawled_at: :asc).each do |s|
         curr_time = Time.at((s.crawled_at.to_i/HOUR)*HOUR).to_i # truncate to hour   
         @dates_time_series[curr_time] = true
         @updated_at[s.name] = s.crawled_at.to_i
+        @positive_doubling_time[s.name] = positive_doubling_time(s.name)
+        @deaths_doubling_time[s.name] = deaths_doubling_time(s.name)
         if s.positive && s.positive > h_pos_state[s.name]
           h_pos_time[curr_time] = h_pos_time[prev_time_pos] - h_pos_state[s.name] + s.positive
           h_pos_state[s.name] = s.positive
@@ -115,6 +175,11 @@ class StatesController < ApplicationController
       @chart_tested = h_tested_time
       @chart_pos = h_pos_time
       @chart_deaths = h_deaths_time
+
+@us_doubling_times = [
+  doubling_time_from_hash(@chart_pos),
+  doubling_time_from_hash(@chart_deaths)
+]
 
       names = @h_positive.to_a.sort {|a,b| b[1].to_i <=> a[1].to_i}.map {|i| i[0]}[0..9]
       all_dates = {}
@@ -221,8 +286,11 @@ class StatesController < ApplicationController
            @h_positive_unofficial,
            @h_deaths_unofficial,
            @dates_time_series,
-           @updated_at].to_s
-      redis.set("state_summary_cache", x) rescue nil
+           @updated_at,
+           @positive_doubling_time,
+           @deaths_doubling_time,
+           @us_doubling_times].to_s
+      redis.set("state_summary_cache5", x) rescue nil
     end # unless skip
     
     # fix time in 3 charts
