@@ -40,6 +40,7 @@ def positive_doubling_time(st)
   h = {}
   arr.each {|i| h[i.positive] = i.crawled_at.to_i} # remove duplicate values, use earliest date
   arr = h.to_a.map {|v,t| [t, v]}.sort
+  return '...' if arr.size <= 3
   xs = arr.map {|t,v| t}
   ys = arr.map {|t,v| v}
   round10(get_info_for(xs, ys)[:doublingTime]/DAY_SEC)
@@ -52,7 +53,7 @@ def deaths_doubling_time(st)
   h = {}
   arr.each {|i| h[i.deaths] = i.crawled_at.to_i} # remove duplicate values, use earliest date
   arr = h.to_a.map {|v,t| [t, v]}.sort
-  return 'N/A' if arr.size <= 2
+  return '...' if arr.size <= 3
   xs = arr.map {|t,v| t}
   ys = arr.map {|t,v| v}
   round10(get_info_for(xs, ys)[:doublingTime]/DAY_SEC)
