@@ -20,7 +20,7 @@ This page provides a record of official data from US government websites for the
 </p>
 
 <p>
-<h4>Latest official COVID-19 data crawled from government websites (click headers to sort):</h4>
+<h4>Latest <%= @unoffical_flag ? 'un' : '' %>official COVID-19 data crawled from government websites (click headers to sort):</h4>
 </p>
 <table id="fulltable" class="table table-sm table-bordered table-striped">
   <thead>
@@ -55,11 +55,11 @@ This page provides a record of official data from US government websites for the
     <% @tested_arr.each do |state_name, tested| %>
       <tr>
 	<td><a href="<%= "/state/#{state_name}" %>"><%= state_name %></a></td>
-        <td><%= tested %> <%= "(#{@h_tested_unofficial[state_name]})" if @h_tested_unofficial[state_name].to_i > tested.to_i %> </td>
-        <td><%= @h_positive[state_name] %> <%= "(#{@h_positive_unofficial[state_name]})" if @h_positive_unofficial[state_name].to_i > @h_positive[state_name].to_i %></td>
-        <td><%= @h_deaths[state_name] %> <%= "(#{@h_deaths_unofficial[state_name]})" if @h_deaths_unofficial[state_name].to_i > @h_deaths[state_name].to_i %> </td>
+        <td><%= tested %> <%= "(#{@h_tested_unofficial[state_name]})" if false && @h_tested_unofficial[state_name].to_i > tested.to_i %> </td>
+        <td><%= @h_positive[state_name] %> <%= "(#{@h_positive_unofficial[state_name]})" if false && @h_positive_unofficial[state_name].to_i > @h_positive[state_name].to_i %></td>
+        <td><%= @h_deaths[state_name] %> <%= "(#{@h_deaths_unofficial[state_name]})" if false && @h_deaths_unofficial[state_name].to_i > @h_deaths[state_name].to_i %> </td>
         <td><%= (tested.to_f/@population[state_name]*1000000).round %>
-<%= "(#{(@h_tested_unofficial[state_name].to_f/@population[state_name]*1000000).round})" if @h_tested_unofficial[state_name].to_i > tested.to_i %>
+<%= "(#{(@h_tested_unofficial[state_name].to_f/@population[state_name]*1000000).round})" if false && @h_tested_unofficial[state_name].to_i > tested.to_i %>
 </td>
         <td><%= (@h_positive[state_name].to_f/tested.to_f*1000).round.to_f/10 rescue 'N\A' %></td>
         <td><%= (@h_deaths[state_name].to_f/@h_positive[state_name].to_f*1000).round.to_f/10 rescue 'N\A' %></td>

@@ -11,6 +11,8 @@ class StatesController < ApplicationController
   	"TN"=>6346165, "TX"=>25145561, "US"=>(308745538+3193694), "UT"=>2763885, "VT"=>625741, "VA"=>8001024, "WA"=>6724540, 
   	"WV"=>1852994, "WI"=>5686986, "WY"=>563626, "PR" =>3193694 }
   HOUR = 3600
+  CACHE_OFFICIAL = 'state_summary_cache5'
+  CACHE_UNOFFICIAL = 'state_summary_unofficial'
 
   # deleted redudant data with:
   # h={};State.all.order(:crawled_at).map {|s| ((t,p,d=h[s.name])&&(t.to_i>=s.tested.to_i)&&(p.to_i>=s.positive.to_i)&&(d.to_i>=s.deaths.to_i)) ? s.delete : [h[s.name]=[s.tested,s.positive,s.deaths]]}
@@ -88,12 +90,22 @@ end
 
   # only reloads redis if called with ?reload=y
   def summary
+    # params['unofficial'], if set, uses all data, default is only official data
+    # params['reload'], if set, refresh the cache
+    @unoffical_flag = !!params['unofficial']
     @population = H_POP
-    @timestamp = State.where('official_flag is true').order(:crawled_at).last.crawled_at
-    skip = false
+    skip = false # skip cache
+    
     begin
       redis = Redis.new(host: "localhost")
-      old = redis.get('state_summary_cache5')
+      old = nil
+      if params['unofficial']
+        @timestamp = State.last.created_at
+        old = redis.get(CACHE_UNOFFICIAL)
+      else
+        @timestamp = State.where('official_flag is true').order(:crawled_at).last.crawled_at
+        old = redis.get(CACHE_OFFICIAL)
+      end
       if (old && (old=eval(old)) && old.shift == @timestamp.to_s) || !params['reload']
         # load old data
         @updated_date,
@@ -139,7 +151,13 @@ end
       @updated_at = {}
       @positive_doubling_time = {}
       @deaths_doubling_time = {}
-      State.all.where('official_flag is true').order(crawled_at: :asc).each do |s|
+
+      states_list = if params['unofficial']
+        State.all
+      else
+        State.all.where('official_flag is true')
+      end
+      states_list.order(crawled_at: :asc).each do |s|
         curr_time = Time.at((s.crawled_at.to_i/HOUR)*HOUR).to_i # truncate to hour   
         @dates_time_series[curr_time] = true
         @updated_at[s.name] = s.crawled_at.to_i
@@ -176,16 +194,22 @@ end
       @chart_pos = h_pos_time
       @chart_deaths = h_deaths_time
 
-@us_doubling_times = [
-  doubling_time_from_hash(@chart_pos),
-  doubling_time_from_hash(@chart_deaths)
-]
+      @us_doubling_times = [
+        doubling_time_from_hash(@chart_pos),
+        doubling_time_from_hash(@chart_deaths)
+      ]
 
       names = @h_positive.to_a.sort {|a,b| b[1].to_i <=> a[1].to_i}.map {|i| i[0]}[0..9]
       all_dates = {}
       states = names.map do |name|
         h = {}
-        State.where("name='#{name}' and official_flag is true").order(:crawled_at).map {|s| all_dates[x=s.crawled_at.to_date.to_s] = true; h[x] = s.positive }
+
+        states_list = if params['unofficial']
+          State.all
+        else
+          State.all.where('official_flag is true')
+        end
+        states_list.where("name='#{name}'").order(:crawled_at).map {|s| all_dates[x=s.crawled_at.to_date.to_s] = true; h[x] = s.positive }
         [name, h]
       end
       all_dates = all_dates.keys.sort
@@ -208,7 +232,13 @@ end
       all_dates = {}
       states = names.map do |name|
         h = {}
-        State.where("name='#{name}' and official_flag is true").order(:crawled_at).map {|s| all_dates[x=s.crawled_at.to_date.to_s] = true; h[x] = (s.positive.to_f/H_POP[name.upcase]*1000_000_0).round.to_f/10 }
+
+        states_list = if params['unofficial']
+          State.all
+        else
+          State.all.where('official_flag is true')
+        end
+        states_list.where("name='#{name}'").order(:crawled_at).map {|s| all_dates[x=s.crawled_at.to_date.to_s] = true; h[x] = (s.positive.to_f/H_POP[name.upcase]*1000_000_0).round.to_f/10 }
         [name, h]
       end
       all_dates = all_dates.keys.sort
@@ -238,6 +268,7 @@ end
       prev_time_tested = nil
       prev_time_pos = nil
       prev_time_deaths = nil
+
       State.all.order(crawled_at: :asc).each do |s|
         curr_time = Time.at((s.crawled_at.to_i/HOUR)*HOUR) # truncate to hour   
         if s.positive && s.positive > h_pos_state[s.name]
@@ -290,7 +321,11 @@ end
            @positive_doubling_time,
            @deaths_doubling_time,
            @us_doubling_times].to_s
-      redis.set("state_summary_cache5", x) rescue nil
+      if params['unofficial']
+        redis.set(CACHE_UNOFFICIAL, x) rescue nil
+      else
+        redis.set(CACHE_OFFICIAL, x) rescue nil
+      end
     end # unless skip
     
     # fix time in 3 charts
