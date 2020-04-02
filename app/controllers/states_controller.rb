@@ -61,9 +61,10 @@ def deaths_doubling_time(st)
   round10(get_info_for(xs, ys)[:doublingTime]/DAY_SEC)
 end
 
-def doubling_time_from_hash(hash)
+def doubling_time_from_hash(hash, sec_ago = WEEK_SEC)
   h={} 
-  hash.to_a.sort.reverse.each {|t,v| h[v]=t} 
+  t0 = Time.now.to_i - sec_ago
+  hash.to_a.sort.reverse.each {|t,v| h[v] = t if t.to_i > t0 } 
   arr=h.to_a.map {|v,t| [t,v]}.sort 
   xs = arr.map {|t,v| t} 
   ys = arr.map {|t,v| v} 
