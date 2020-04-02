@@ -65,6 +65,7 @@ def doubling_time_from_hash(hash, sec_ago = WEEK_SEC)
   h={} 
   t0 = Time.now.to_i - sec_ago
   hash.to_a.sort.reverse.each {|t,v| h[v] = t if t.to_i > t0 } 
+  return nil if h.size <= 2
   arr=h.to_a.map {|v,t| [t,v]}.sort 
   xs = arr.map {|t,v| t} 
   ys = arr.map {|t,v| v} 
