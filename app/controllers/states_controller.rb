@@ -101,7 +101,7 @@ end
     begin
       redis = Redis.new(host: "localhost")
       old = nil
-      if params['unofficial']
+      if @unoffical_flag
         @timestamp = State.last.created_at
         old = redis.get(CACHE_UNOFFICIAL)
       else
@@ -154,7 +154,7 @@ end
       @positive_doubling_time = {}
       @deaths_doubling_time = {}
 
-      states_list = if params['unofficial']
+      states_list = if @unoffical_flag
         State.all
       else
         State.all.where('official_flag is true')
@@ -206,7 +206,7 @@ end
       states = names.map do |name|
         h = {}
 
-        states_list = if params['unofficial']
+        states_list = if @unoffical_flag
           State.all
         else
           State.all.where('official_flag is true')
@@ -235,7 +235,7 @@ end
       states = names.map do |name|
         h = {}
 
-        states_list = if params['unofficial']
+        states_list = if @unoffical_flag
           State.all
         else
           State.all.where('official_flag is true')
@@ -277,7 +277,7 @@ end
           h_pos_time[curr_time] = h_pos_time[prev_time_pos] - h_pos_state[s.name] + s.positive
           h_pos_state[s.name] = s.positive
           prev_time_pos = curr_time
-          @url[s.name] = s.positive_source
+          @url[s.name] = s.positive_source if @unoffical_flag
         end
         if s.tested && s.tested > h_tested_state[s.name]
           h_tested_time[curr_time] = h_tested_time[prev_time_tested] - h_tested_state[s.name] + s.tested
@@ -323,7 +323,7 @@ end
            @positive_doubling_time,
            @deaths_doubling_time,
            @us_doubling_times].to_s
-      if params['unofficial']
+      if @unoffical_flag
         redis.set(CACHE_UNOFFICIAL, x) rescue nil
       else
         redis.set(CACHE_OFFICIAL, x) rescue nil
