@@ -19,9 +19,10 @@ This page provides a record of official data from US government websites for the
 </p>
 
 <p>
-<h4>Latest <%= @unoffical_flag ? 'provisional' : 'official' %> COVID-19 data crawled from government websites (click headers to sort):</h4>
+<h4>Latest <%= @unoffical_flag ? 'provisional' : 'official' %> COVID-19 data crawled from government websites</h4>
 </p>
 <p>
+Click headers to sort by column. Click on your state to see data including total tested over time, total positive cases over time, total deaths over time. Information to access API for each state to get time series is available on the state detail page.
 </p>
 <table id="fulltable" class="table table-sm table-bordered table-striped table-hover">
   <thead>
@@ -73,8 +74,6 @@ This page provides a record of official data from US government websites for the
   </tbody>
 </table>
 
-
-
 <div class="container">
   <h5>Total number tested over time:</h5>
   <%= line_chart @chart_tested, curve: false, xtitle: "Date", points: false, thousands: "," %>
@@ -88,7 +87,7 @@ This page provides a record of official data from US government websites for the
   <%= line_chart @chart_deaths, curve: false, xtitle: "Date", points: false, thousands: ",", library: {spanGaps: false, elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 10, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}} %>
 </div>
 <div class="container">
-  <h5>Cases in top states over time:</h5>
+  <h5>Cases in top states over time (click on states in legend to select or deselect them):</h5>
   <%= line_chart @chart_states, {thousands: ",", library: {spanGaps: false, elements: {line: {tension: 0}, point: {radius: 0}}, pointRadius: 10, legend: {position: 'right',}, scales: {yAxes: [{id: 'y-axis', type: 'logarithmic'},]}}} %>
 </div>
 <div class="container">
