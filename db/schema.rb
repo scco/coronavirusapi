@@ -10,9 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_03_26_140724) do
+ActiveRecord::Schema.define(version: 2020_03_23_053746) do
 
-  create_table "states", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "states", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "name"
     t.integer "tested"
     t.integer "positive"
@@ -26,7 +26,7 @@ ActiveRecord::Schema.define(version: 2020_03_26_140724) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.boolean "official_flag", default: true
-    t.datetime "crawled_at", default: "2020-03-28 03:50:10"
+    t.datetime "crawled_at"
     t.index ["crawled_at"], name: "index_states_on_crawled_at"
   end
 
