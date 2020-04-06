@@ -403,6 +403,26 @@ end
     render plain: s
   end
 
+  def get_time_series_json
+    if (st = params['name']) && st.size < 3
+      arr = State.where("official_flag is true and name='#{st.upcase}'").order(:crawled_at).all.map do |i| 
+        { :seconds_since_epoch => i.crawled_at.to_i,
+          :tested => i.tested, 
+          :positive => i.positive, 
+          :deaths => i.deaths
+        }
+      end
+      if arr.size == 0
+        s = "#{st} not found"
+      else
+        s = arr.to_json
+      end
+    else
+      s = "Please use a 2 letter state abbreviation"
+    end
+    render plain: s
+  end
+
   # unused scaffolding code
 
   # GET /states
