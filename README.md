@@ -17,7 +17,7 @@
 
 3.) Copy db/database.yml.example to db/database.yml and update the file with your database credentials
 
-4.) Import the database dump from db/dump.sql using the command:
+4.) Import the database dump from db/dump2.sql using the command:
  
  `mysql -u <mysql-username> -p coronavirusapi_development < ~/projects/cvirusapi/coronavirusapi/db/dump.sql`
  
@@ -26,3 +26,6 @@
 6.) Run `bundle exec rails s` to start the development server
 
 7.) Access the application at localhost:3000
+
+locally, you also need to run redis. If not, you need to use this url: 
+http://localhost:3000/?reload=y
