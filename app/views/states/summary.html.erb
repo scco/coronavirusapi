@@ -34,8 +34,11 @@ Click headers to sort by column. Click on your state to see data including total
       <th>Tested<br/>/1M People</th>
       <th>Positive<br/>/Tested %</th>
       <th>Deaths<br/>/Positive %</th>
+      <th>Deaths<br/>/1M People</th>
+<% if false %>
       <th>Days to<br/>2x cases</th>
       <th>Days to<br/>2x deaths</th>
+<% end %>
       <th>Source</th>
       <th>Last update<br/>(hours ago)</th>
     </tr>
@@ -49,8 +52,11 @@ Click headers to sort by column. Click on your state to see data including total
         <td><%= (@tested.to_f/@population['US']*1000000).round %></td>
         <td><%= (@positive.to_f/@tested.to_f*1000).round.to_f/10 rescue 'N\A' %></td>
         <td><%= (@deaths.to_f/@positive.to_f*1000).round.to_f/10 rescue 'N\A' %></td>
+        <td><%= (@deaths.to_f/@population['US']*10_000_000).round.to_f/10 rescue 'N\A' %></td>
+<% if false %>
         <td><%= @us_doubling_times[0] %></td>
         <td><%= @us_doubling_times[1] %></td>
+<% end %>
         <td></td>
         <td><%= ((Time.now-@timestamp)/360).round.to_f/10 %></td>
       </tr>
@@ -65,8 +71,11 @@ Click headers to sort by column. Click on your state to see data including total
 </td>
         <td><%= (@h_positive[state_name].to_f/tested.to_f*1000).round.to_f/10 rescue 'N\A' %></td>
         <td><%= (@h_deaths[state_name].to_f/@h_positive[state_name].to_f*1000).round.to_f/10 rescue 'N\A' %></td>
+        <td><%= (@h_deaths[state_name].to_f/@population[state_name]*10_000_000).round.to_f/10 %></td>
+<% if false %>
         <td><%= @positive_doubling_time[state_name] %></td>
         <td><%= @deaths_doubling_time[state_name] %></td>
+<% end %>
         <td><a href="<%= @url[state_name] %>"><%= state_name %></a></td>
 	<td><%= "#{((Time.now.to_i-@updated_at[state_name])/360).round.to_f/10}" %></td>
       </tr>
