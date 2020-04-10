@@ -74,8 +74,16 @@ p, li {
 
 ol {
   padding-inline-start: 15px;
-}
 
+  font-size: 1.05rem;
+  padding-left: 34px;
+
+}
+.ol-h3 {
+  font-size: 1.6em;
+  color: black;
+  padding-left: 34px;
+}
 .pretty th .current {
   padding-right: 4px;
   background-repeat: no-repeat;
