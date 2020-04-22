@@ -332,13 +332,22 @@ end
     
     # fix time in 3 charts
     h = {}
-    @chart_tested.each {|k,v| h[Time.at(k)]=v}
+    unless @chart_tested.nil?
+      @chart_tested.each { |k, v| h[Time.at(k)] = v }
+    end
+
     @chart_tested = h
     h = {}
-    @chart_pos.each {|k,v| h[Time.at(k)]=v}
+    unless @chart_pos.nil?
+      @chart_pos.each { |k, v| h[Time.at(k)] = v }
+    end
+
     @chart_pos = h
     h = {}
-    @chart_deaths.each {|k,v| h[Time.at(k)]=v}
+    unless @char_deaths.nil?
+      @chart_deaths.each {|k,v| h[Time.at(k)]=v}
+    end
+
     @chart_deaths = h
   end
 

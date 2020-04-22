@@ -60,7 +60,9 @@ Click headers to sort by column. Click on your state to see data including total
         <td></td>
         <td><%= ((Time.now-@timestamp)/360).round.to_f/10 %></td>
       </tr>
-    <% @tested_arr.each do |state_name, tested| %>
+      <% unless @tested_arr.nil? %>
+        <% @tested_arr.each do |state_name, tested| %>
+      <% end %>
       <tr>
 	<td><a href="<%= "/state/#{state_name}" %>"><%= state_name %></a></td>
         <td><%= tested %> <%= "(#{@h_tested_unofficial[state_name]})" if false && @h_tested_unofficial[state_name].to_i > tested.to_i %> </td>
